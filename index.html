@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="contenedor-principal">
+        <aside class="barra-lateral">
+            <h1 class="titulo-app">Catalogo</h1>
+            
+            <div class="seccion-busqueda">
+                <label class="etiqueta-input">Buscar anime</label>
+                <div class="grupo-busqueda">
+                    <input 
+                        type="text" 
+                        id="entradaBusqueda" 
+                        placeholder="Nombre del anime..."
+                        class="entrada-busqueda"
+                    >
+                    <button id="botonBuscar" class="boton-buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="seccion-filtros">
+                <label class="etiqueta-input">Filtros</label>
+                <button class="boton-filtro activo" data-tipo="bypopularity">
+                    <i class="bi bi-fire"></i>
+                    <span>Populares</span>
+                </button>
+                <button class="boton-filtro" data-tipo="airing">
+                    <i class="bi bi-broadcast"></i>
+                    <span>En emision</span>
+                </button>
+                <button class="boton-filtro" data-tipo="upcoming">
+                    <i class="bi bi-clock"></i>
+                    <span>Proximamente </span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="contenido-principal">
+            <div id="cargador" class="cargador oculto">
+                <div class="spinner"></div>
+            </div>
+
+            <section id="resultados" class="seccion-resultados">
+                <div id="cuadriculaAnime" class="cuadricula-anime">
+                </div>
+                
+                <div id="paginacion" class="paginacion oculto">
+                    <button id="botonAnterior" class="boton-paginacion">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span id="infoPagina" class="info-pagina">Pagina 1</span>
+                    <button id="botonSiguiente" class="boton-paginacion">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section id="detalles" class="seccion-detalles oculto">
+                <button id="botonVolver" class="boton-volver">
+
+                    <i class="bi bi-chevron-left"></i> Volver
+                </button>
+                <div id="contenedorDetalles" class="contenedor-detalles">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
