@@ -4,6 +4,7 @@ let paginaActual = 1;
 let totalPaginas = 1;
 let filtroActual = 'bypopularity';
 let consultaActual = '';
+let generoActual = null;
 const entradaBusqueda = document.getElementById('entradaBusqueda');
 const botonBuscar = document.getElementById('botonBuscar');
 const cuadriculaAnime = document.getElementById('cuadriculaAnime');
@@ -17,6 +18,7 @@ const paginacion = document.getElementById('paginacion');
 const botonAnterior = document.getElementById('botonAnterior');
 const botonSiguiente = document.getElementById('botonSiguiente');
 const infoPagina = document.getElementById('infoPagina');
+const contenedorGeneros = document.getElementById('contenedorGeneros');
 
 botonBuscar.addEventListener('click', buscarAnime);
 entradaBusqueda.addEventListener('keypress', (e) => {
@@ -34,7 +36,11 @@ botonesFiltro.forEach(boton => {
         const tipo = boton.dataset.tipo;
         filtroActual = tipo;
         consultaActual = '';
+        generoActual=null;
         paginaActual = 1;
+        const botonesGenero=document.querySelectorAll('.boton-genero');
+        botonesGenero.forEach(b => b.classList.remove('activo'));
+        
         obtenerTopAnime(tipo, 1);
     });
 });
@@ -53,10 +59,11 @@ function actualizarPaginacion() {
 function paginaAnterior(){
     if (paginaActual > 1){
         paginaActual--;
-        if (consultaActual)
-        {
+        if (generoActual){
+            filtrarPorGenero(generoActual, paginaActual);
+        } else if(consultaActual){
             buscarAnimePagina(consultaActual, paginaActual);
-        } else{
+        }else{
             obtenerTopAnime(filtroActual, paginaActual);
         }
         window.scrollTo(0, 0);
@@ -66,9 +73,11 @@ function paginaAnterior(){
 function paginaSiguiente(){
     if (paginaActual < totalPaginas){
         paginaActual++;
-        if (consultaActual) {
+        if (generoActual){
+            filtrarPorGenero(generoActual, paginaActual);
+        } else if(consultaActual){
             buscarAnimePagina(consultaActual, paginaActual);
-        } else {
+        }else{
             obtenerTopAnime(filtroActual, paginaActual);
         }
         window.scrollTo(0, 0);
@@ -78,7 +87,11 @@ function paginaSiguiente(){
 async function buscarAnime(){
     const consulta = entradaBusqueda.value.trim();
     consultaActual = consulta;
+    generoActual=null;
     paginaActual = 1;
+    const botonesGenero=document.querySelectorAll('.boton-genero');
+    botonesGenero.forEach(b => b.classList.remove('activo'));
+    
     buscarAnimePagina(consulta, 1);
 }
 
@@ -142,7 +155,6 @@ function mostrarAnimes(animes){
                 src="${anime.images.jpg.large_image_url || anime.images.jpg.image_url}" 
                 alt="${anime.title}"
                 class="imagen-anime"
-                loading="lazy"
             >
             <div class="info-anime">
                 <h3 class="titulo-anime">${anime.title}</h3>
@@ -175,6 +187,7 @@ async function mostrarDetallesAnime(idAnime){
         const anime = datos.data;
         
         mostrarDetalles(anime);
+        
     } catch (error) {
         console.error('Error:', error);
         contenedorDetalles.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 3rem;">Error al cargar</p>';
@@ -184,7 +197,13 @@ async function mostrarDetallesAnime(idAnime){
 }
 
 function mostrarDetalles(anime){
-    const generos=anime.genres.map(g => `<span class="etiqueta-genero">${g.name}</span>`).join('');
+    const todosLosGeneros =[
+        ...(anime.genres || []),
+        ...(anime.themes || []),
+        ...(anime.demographics || []),
+        ...(anime.explicit_genres || [])
+    ];
+    const generos = todosLosGeneros.map(g => `<span class="etiqueta-genero">${g.name}</span>`).join('');
     const estado = anime.status || 'Desconocido';
     const episodios = anime.episodes || 'N/A';
     const duracion = anime.duration || 'N/A';
@@ -281,10 +300,91 @@ function mostrarDetalles(anime){
     `;
 }
 
-function volverResultados() {
+async function cargarGeneros(){
+    try{
+        //delay por el rate limit de la api
+        const respGenres = await fetch(`${URL_API}/genres/anime`);
+        await new Promise(resolve => setTimeout(resolve, 350));
+        const respThemes = await fetch(`${URL_API}/genres/anime?filter=themes`);
+        await new Promise(resolve => setTimeout(resolve, 350));
+        const respDemographics = await fetch(`${URL_API}/genres/anime?filter=demographics`);
+        
+        if (!respGenres.ok || !respThemes.ok || !respDemographics.ok) {
+            throw new Error('Error al cargar géneros');
+        }
+    
+        const dataGenres = await respGenres.json();
+        const dataThemes = await respThemes.json();
+        const dataDemographics = await respDemographics.json();
+        const todasCategorias = [
+            ...dataGenres.data,
+            ...dataThemes.data,
+            ...dataDemographics.data
+        ];
+        
+        todasCategorias.sort((a, b) => a.name.localeCompare(b.name));
+        contenedorGeneros.innerHTML = todasCategorias.map(genero => `
+            <button class="boton-genero" data-genero-id="${genero.mal_id}">
+                ${genero.name} (${genero.count})
+            </button>
+        `).join('');
+        
+        const botonesGenero = contenedorGeneros.querySelectorAll('.boton-genero');
+        botonesGenero.forEach(boton => {
+            boton.addEventListener('click', () => {
+                const generoId = boton.dataset.generoId;
+        
+                if (generoActual === generoId){
+                    botonesGenero.forEach(b => b.classList.remove('activo'));
+                    generoActual = null;
+                    obtenerTopAnime(filtroActual, 1);
+                } else {
+                    botonesGenero.forEach(b => b.classList.remove('activo'));
+                    boton.classList.add('activo');
+                    generoActual = generoId;
+                    consultaActual = '';
+                    paginaActual = 1;
+                    filtrarPorGenero(generoId, 1);
+                }
+            });
+        });
+        
+    }catch(error){
+        console.error('Error al cargar géneros:', error);
+        contenedorGeneros.innerHTML = '<p style="color: var(--texto-secundario); font-size: 0.85rem; padding: 0.5rem;">Error al cargar categorías</p>';
+    }
+}
+
+async function filtrarPorGenero(generoId, pagina){
+    alternarCargador(true);
+    cuadriculaAnime.innerHTML = '';
+    
+    try{
+        const respuesta = await fetch(`${URL_API}/anime?genres=${generoId}&page=${pagina}&limit=25`);
+        
+        if(!respuesta.ok){
+            throw new Error('Error al filtrar por género');
+        }
+        
+        const datos = await respuesta.json();
+        animesActuales = datos.data;
+        totalPaginas = datos.pagination.last_visible_page;
+        
+        mostrarAnimes(animesActuales);
+        actualizarPaginacion();
+    }catch(error){
+        console.error('Error:', error);
+        cuadriculaAnime.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--texto-secundario); padding: 3rem;">Error al filtrar. Intenta de nuevo</p>';
+    }finally{
+        alternarCargador(false);
+    }
+}
+
+function volverResultados(){
     seccionDetalles.classList.add('oculto');
     seccionResultados.classList.remove('oculto');
 }
 window.addEventListener('load', () => {
     obtenerTopAnime('bypopularity', 1);
+    cargarGeneros();
 });
