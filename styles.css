@@ -390,3 +390,54 @@ body{
 .boton-paginacion:hover:not(:disabled) {
     background: var(--fondo-terciario);
 }
+
+.seccion-generos {
+    margin-top: 2rem;
+}
+
+.contenedor-generos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: var(--fondo-principal);
+    border: 1px solid var(--borde);
+    border-radius: 4px;
+}
+
+.boton-genero {
+    padding: 0.5rem 0.75rem;
+    background: #8b2e2e;
+    color: var(--texto-principal);
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.boton-genero.activo {
+    background: #b33939;
+    box-shadow: 0 0 0 2px rgba(179, 57, 57, 0.3);
+}
+
+.contenedor-generos::-webkit-scrollbar {
+    width: 8px;
+}
+
+.contenedor-generos::-webkit-scrollbar-track {
+    background: var(--fondo-principal);
+    border-radius: 4px;
+}
+
+.contenedor-generos::-webkit-scrollbar-thumb {
+    background: var(--borde);
+    border-radius: 4px;
+}
+
+.contenedor-generos::-webkit-scrollbar-thumb:hover {
+    background: var(--color-acento);
+}
