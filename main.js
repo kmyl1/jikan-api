@@ -300,6 +300,11 @@ function mostrarDetalles(anime){
     `;
 }
 
+function volverResultados() {
+    seccionDetalles.classList.add('oculto');
+    seccionResultados.classList.remove('oculto');
+}
+
 async function cargarGeneros(){
     try{
         //delay por el rate limit de la api
@@ -380,10 +385,6 @@ async function filtrarPorGenero(generoId, pagina){
     }
 }
 
-function volverResultados(){
-    seccionDetalles.classList.add('oculto');
-    seccionResultados.classList.remove('oculto');
-}
 window.addEventListener('load', () => {
     obtenerTopAnime('bypopularity', 1);
     cargarGeneros();
