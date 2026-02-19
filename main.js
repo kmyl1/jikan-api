@@ -308,7 +308,7 @@ function volverResultados() {
 async function cargarGeneros(){
     try{
         //delay por el rate limit de la api
-        const respGenres = await fetch(`${URL_API}/genres/anime`);
+        const respGenres = await fetch(`${URL_API}/genres/anime?filter=genres`);
         await new Promise(resolve => setTimeout(resolve, 350));
         const respThemes = await fetch(`${URL_API}/genres/anime?filter=themes`);
         await new Promise(resolve => setTimeout(resolve, 350));
